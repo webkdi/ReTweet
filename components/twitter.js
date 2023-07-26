@@ -25,10 +25,16 @@ async function tweetPost(text, mediaType, mediaeUrl) {
     } else if (mediaType == "video") {
       mediaTypeDesc = "video/mp4";
     }
-    mediaId = await client.v1.uploadMedia(mediaBuffer, {
-      mimeType: mediaTypeDesc,
-    });
-    console.log("Twitter: media uploaded with id", mediaId);
+    try {
+      mediaId = await client.v1.uploadMedia(mediaBuffer, {
+        mimeType: mediaTypeDesc,
+      });
+      console.log("Twitter: media uploaded with id", mediaId);
+    } catch (error) {
+      // Code to handle errors here
+      console.error("Error uploading media:", error.message);
+      return error.message;
+    }
   }
 
   //Tweet!
