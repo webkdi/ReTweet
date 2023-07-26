@@ -26,6 +26,7 @@ async function tweetPost(text, mediaType, mediaeUrl) {
       mediaTypeDesc = "video/mp4";
     }
     try {
+      console.log("Trying to upload media",mediaeUrl);
       mediaId = await client.v1.uploadMedia(mediaBuffer, {
         mimeType: mediaTypeDesc,
       });
