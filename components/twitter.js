@@ -56,7 +56,7 @@ async function tweetPost(text, mediaType, mediaeUrl) {
   } catch (error) {
     // const errorMessage = 'An error occurred while posting the tweet: ' + error.data + ', ' + error.rateLimit;
     console.error(error);
-    throw new Error(errorMessage);
+    return error.data;
   }
 }
 
