@@ -23,6 +23,7 @@ router.post("/tweets", async (req, res) => {
     const text = req.body.text;
     const mediaType = req.body.mediaType;
     const mediaeUrl = req.body.mediaeUrl;
+    const channel = req.body.channel;
     console.log("trying to create tweet with", mediaType, text, mediaeUrl);
 
     // Check if mediaType is available, must be a string, and can contain "text", "image", or "video"
@@ -39,7 +40,21 @@ router.post("/tweets", async (req, res) => {
       });
     }
 
-    const tweet = await tw.tweetPost(text, mediaType, mediaeUrl);
+    // Check if channel is available and must be "polk" or "infodefense"
+    if (
+      !channel ||
+      typeof channel !== "string" ||
+      !["polk", "infodefense"].includes(channel)
+    ) {
+      // Clear the timeout before sending the response to avoid headers already sent error
+      clearTimeout(timeout);
+      return res.status(400).json({
+        error:
+          "Invalid channel. It must be a string and can only be 'polk' or 'infodefense'.",
+      });
+    }
+
+    const tweet = await tw.tweetPost(text, mediaType, mediaeUrl, channel);
     // Clear the timeout before sending the response to avoid headers already sent error
     clearTimeout(timeout);
 

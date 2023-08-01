@@ -2,16 +2,23 @@ require("dotenv").config();
 const { TwitterApi } = require("twitter-api-v2");
 const axios = require("axios");
 
-const client = new TwitterApi({
+const client_InfoDefense = new TwitterApi({
   appKey: process.env.TWITTER_APP_KEY,
   appSecret: process.env.TWITTER_APP_SECRET,
   accessToken: process.env.TWITTER_ACCESS_TOKEN,
   accessSecret: process.env.TWITTER_ACCESS_SECRET,
 });
+const client_Polk = new TwitterApi({
+  appKey: process.env.TWITTER_POLK_APP_KEY,
+  appSecret: process.env.TWITTER_POLK_APP_SECRET,
+  accessToken: process.env.TWITTER_POLK_ACCESS_TOKEN,
+  accessSecret: process.env.TWITTER_POLK_ACCESS_SECRET,
+});
 
-const rwClient = client.readWrite;
+const rwClient_InfoDefense = client_InfoDefense.readWrite;
+const rwClient_Polk = client_Polk.readWrite;
 
-async function tweetPost(text, mediaType, mediaeUrl) {
+async function tweetPost(text, mediaType, mediaeUrl, channel) {
   // Upload media (image, video) to twitter
   let mediaId;
   if (mediaType != "text") {
@@ -26,10 +33,17 @@ async function tweetPost(text, mediaType, mediaeUrl) {
       mediaTypeDesc = "video/mp4";
     }
     try {
-      console.log("Trying to upload media",mediaeUrl);
-      mediaId = await client.v1.uploadMedia(mediaBuffer, {
-        mimeType: mediaTypeDesc,
-      });
+      console.log("Trying to upload media", mediaeUrl);
+      // Create an object to hold the media data and mimeType
+      const mediaData = { mimeType: mediaTypeDesc };
+      if (channel === "infodefense") {
+        mediaId = await client_InfoDefense.v1.uploadMedia(
+          mediaBuffer,
+          mediaData
+        );
+      } else if (channel === "polk") {
+        mediaId = await client_Polk.v1.uploadMedia(mediaBuffer, mediaData);
+      }
       console.log("Twitter: media uploaded with id", mediaId);
     } catch (error) {
       // Code to handle errors here
@@ -42,16 +56,28 @@ async function tweetPost(text, mediaType, mediaeUrl) {
   try {
     let tweet;
     if (mediaType != "text") {
-      tweet = await client.v2.tweet({
-        text,
-        media: { media_ids: [mediaId] },
-      });
+      if (channel === "infodefense") {
+        tweet = await client_InfoDefense.v2.tweet({
+          text,
+          media: { media_ids: [mediaId] },
+        });
+      } else if (channel === "polk") {
+        tweet = await client_Polk.v2.tweet({
+          text,
+          media: { media_ids: [mediaId] },
+        });
+      }
     } else {
-      tweet = await client.v2.tweet({
-        text,
-      });
+      if (channel === "infodefense") {
+        tweet = await client_InfoDefense.v2.tweet({
+          text,
+        });
+      } else if (channel === "polk") {
+        tweet = await client_Polk.v2.tweet({
+          text,
+        });
+      }
     }
-    // tweet = await client.v2.tweet("Hello, this is a test.");
     console.log(
       "Twitter: tweet created with id",
       tweet.data.id,
